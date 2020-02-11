@@ -19,7 +19,7 @@ class QueryBuilderSortsTest extends TestCase
         $post2 = factory(Post::class)->create(['published_at' => now()]);
         $post3 = factory(Post::class)->create(['published_at' => now()->addHours(4)]);
 
-        $request = Request::create("/posts?sort=published_at");
+        $request = Request::create('/posts?sort=published_at');
 
         /** @var Collection $post */
         $result = (new PostListQuery($request))
@@ -28,7 +28,7 @@ class QueryBuilderSortsTest extends TestCase
         $this->assertEquals($result->first()->id, $post2->id);
         $this->assertEquals($result->last()->id, $post3->id);
 
-        $request = Request::create("/posts?sort=-published_at");
+        $request = Request::create('/posts?sort=-published_at');
 
         /** @var Collection $post */
         $result = (new PostListQuery($request))
@@ -40,7 +40,7 @@ class QueryBuilderSortsTest extends TestCase
 
     public function test_can_not_sort_by_non_existing_field()
     {
-        $request = Request::create("/posts?sort=colour");
+        $request = Request::create('/posts?sort=colour');
         $this->expectException(\RuntimeException::class);
 
         (new PostListQuery($request))
@@ -55,7 +55,7 @@ class QueryBuilderSortsTest extends TestCase
         $post2 = factory(Post::class)->create(['published_at' => now()]);
         $post3 = factory(Post::class)->create(['published_at' => now()->addHours(4)]);
 
-        $request = Request::create("/posts?sort=published_day");
+        $request = Request::create('/posts?sort=published_day');
 
         /** @var Collection $post */
         $result = (new PostListQuery($request))
@@ -64,7 +64,7 @@ class QueryBuilderSortsTest extends TestCase
         $this->assertEquals($result->first()->id, $post2->id);
         $this->assertEquals($result->last()->id, $post3->id);
 
-        $request = Request::create("/posts?sort=-published_day");
+        $request = Request::create('/posts?sort=-published_day');
 
         /** @var Collection $post */
         $result = (new PostListQuery($request))
@@ -85,7 +85,7 @@ class QueryBuilderSortsTest extends TestCase
         factory(Comment::class, 2)->create(['post_id' => $post1->id]);
         factory(Comment::class, 4)->create(['post_id' => $post3->id]);
 
-        $request = Request::create("/posts?sort=comments_count");
+        $request = Request::create('/posts?sort=comments_count');
 
         /** @var Collection $post */
         $result = (new PostListQuery($request))
@@ -94,7 +94,7 @@ class QueryBuilderSortsTest extends TestCase
         $this->assertEquals($result->first()->id, $post2->id);
         $this->assertEquals($result->last()->id, $post3->id);
 
-        $request = Request::create("/posts?sort=-comments_count");
+        $request = Request::create('/posts?sort=-comments_count');
 
         /** @var Collection $post */
         $result = (new PostListQuery($request))

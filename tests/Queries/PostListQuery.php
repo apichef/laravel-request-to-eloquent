@@ -3,14 +3,13 @@
 namespace LaravelRequestToEloquent\Queries;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Query\Builder as QueryBuilder;
 use LaravelRequestToEloquent\Dummy\Post;
 use LaravelRequestToEloquent\QueryBuilderAbstract;
 
 class PostListQuery extends QueryBuilderAbstract
 {
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     protected function init()
     {

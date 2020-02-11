@@ -26,7 +26,7 @@ class QueryBuilderIncludesTest extends TestCase
 
     public function test_can_not_include_non_existing_relationship()
     {
-        $request = Request::create("/posts?include=colour");
+        $request = Request::create('/posts?include=colour');
         $this->expectException(\RuntimeException::class);
 
         (new PostListQuery($request))

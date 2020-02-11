@@ -1,9 +1,9 @@
 <?php
 
+use Faker\Generator as Faker;
+use LaravelRequestToEloquent\Dummy\Comment;
 use LaravelRequestToEloquent\Dummy\Post;
 use LaravelRequestToEloquent\Dummy\User;
-use LaravelRequestToEloquent\Dummy\Comment;
-use Faker\Generator as Faker;
 
 $factory->define(Comment::class, function (Faker $faker) {
     return [

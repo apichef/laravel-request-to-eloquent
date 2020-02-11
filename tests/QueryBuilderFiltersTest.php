@@ -15,7 +15,7 @@ class QueryBuilderFiltersTest extends TestCase
         factory(Post::class, 3)->create(['published_at' => null]);
         factory(Post::class, 2)->create(['published_at' => now()]);
 
-        $request = Request::create("/posts?filter[draft]");
+        $request = Request::create('/posts?filter[draft]');
 
         /** @var Collection $post */
         $result = (new PostListQuery($request))
@@ -26,7 +26,7 @@ class QueryBuilderFiltersTest extends TestCase
 
     public function test_can_not_filter_by_non_existing_filter()
     {
-        $request = Request::create("/posts?filter[colour]");
+        $request = Request::create('/posts?filter[colour]');
         $this->expectException(\RuntimeException::class);
 
         (new PostListQuery($request))->get();
@@ -37,7 +37,7 @@ class QueryBuilderFiltersTest extends TestCase
         factory(Post::class, 4)->create(['published_at' => null]);
         factory(Post::class, 1)->create(['published_at' => now()]);
 
-        $request = Request::create("/posts?filter[non_published]");
+        $request = Request::create('/posts?filter[non_published]');
 
         /** @var Collection $post */
         $result = (new PostListQuery($request))
@@ -53,7 +53,7 @@ class QueryBuilderFiltersTest extends TestCase
         factory(Post::class, 2)->create(['published_at' => Carbon::parse('2020-01-02')]);
         factory(Post::class, 3)->create(['published_at' => Carbon::parse('2020-02-14')]);
 
-        $request = Request::create("/posts?filter[published_before]=2020-02-02");
+        $request = Request::create('/posts?filter[published_before]=2020-02-02');
 
         /** @var Collection $post */
         $result = (new PostListQuery($request))

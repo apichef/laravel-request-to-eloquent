@@ -156,7 +156,7 @@ abstract class QueryBuilderAbstract
             return;
         }
 
-        $methodName = 'include' . Str::studly(str_replace('.', 'With', $relation));
+        $methodName = 'include'.Str::studly(str_replace('.', 'With', $relation));
         if (method_exists($this, $methodName)) {
             $this->{$methodName}($this->query, $params);
 
@@ -187,7 +187,7 @@ abstract class QueryBuilderAbstract
             return;
         }
 
-        $methodName = 'filterBy' . Str::studly($scope);
+        $methodName = 'filterBy'.Str::studly($scope);
 
         if (method_exists($this, $methodName)) {
             $this->{$methodName}($this->query, $params);
@@ -219,7 +219,7 @@ abstract class QueryBuilderAbstract
             return;
         }
 
-        $methodName = 'sortBy' . Str::studly($field);
+        $methodName = 'sortBy'.Str::studly($field);
 
         if (method_exists($this, $methodName)) {
             $this->{$methodName}($this->query, $direction);

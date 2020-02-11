@@ -1,8 +1,8 @@
 <?php
 
-use LaravelRequestToEloquent\Dummy\User;
-use Illuminate\Support\Str;
 use Faker\Generator as Faker;
+use Illuminate\Support\Str;
+use LaravelRequestToEloquent\Dummy\User;
 
 $factory->define(User::class, function (Faker $faker) {
     return [

@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace LaravelRequestToEloquent\Dummy;
 
-use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
 {
