@@ -13,6 +13,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use LaravelJsonApiQueryParams\Fields;
 use LaravelJsonApiQueryParams\QueryParamBag;
+use LaravelJsonApiQueryParams\SortField;
 use LaravelJsonApiQueryParams\Sorts;
 
 abstract class QueryBuilderAbstract
@@ -37,6 +38,12 @@ abstract class QueryBuilderAbstract
 
     private $allowedIncludes = [];
 
+    protected $availableIncludes = [];
+
+    protected $availableFilters = [];
+
+    protected $availableSorts = [];
+
     public function __construct(Request $request)
     {
         $this->request = $request;
@@ -60,6 +67,11 @@ abstract class QueryBuilderAbstract
     }
 
     protected function filtersMap(): array
+    {
+        return [];
+    }
+
+    protected function sortsMap(): array
     {
         return [];
     }
@@ -90,6 +102,10 @@ abstract class QueryBuilderAbstract
 
         if ($this->request->filled(config('query-params.filter'))) {
             $this->applyFilters($this->filters);
+        }
+
+        if ($this->request->filled(config('query-params.sort'))) {
+            $this->applySorts($this->sorts);
         }
 
         return $this->query;
@@ -147,7 +163,13 @@ abstract class QueryBuilderAbstract
             return;
         }
 
-        $this->query->with($relation);
+        if (in_array($relation, $this->availableIncludes)) {
+            $this->query->with($relation);
+
+            return;
+        }
+
+        throw new \RuntimeException("Trying to include non existing relationship {$relation}");
     }
 
     private function applyFilters(QueryParamBag $filters)
@@ -165,7 +187,7 @@ abstract class QueryBuilderAbstract
             return;
         }
 
-        $methodName = 'filter' . Str::studly($scope);
+        $methodName = 'filterBy' . Str::studly($scope);
 
         if (method_exists($this, $methodName)) {
             $this->{$methodName}($this->query, $params);
@@ -173,6 +195,44 @@ abstract class QueryBuilderAbstract
             return;
         }
 
-        $this->query->{$scope}($params);
+        if (in_array($scope, $this->availableFilters)) {
+            $this->query->{$scope}($params);
+
+            return;
+        }
+
+        throw new \RuntimeException("Trying to filter by non existing filter {$scope}");
+    }
+
+    private function applySorts(Sorts $sorts)
+    {
+        $sorts->each(function (SortField $sortField) {
+            $this->applySort($sortField->getField(), $sortField->getDirection());
+        });
+    }
+
+    private function applySort(string $field, string $direction)
+    {
+        if ($sortAlias = Arr::get($this->sortsMap(), $field)) {
+            $this->query->orderBy($sortAlias, $direction);
+
+            return;
+        }
+
+        $methodName = 'sortBy' . Str::studly($field);
+
+        if (method_exists($this, $methodName)) {
+            $this->{$methodName}($this->query, $direction);
+
+            return;
+        }
+
+        if (in_array($field, $this->availableSorts)) {
+            $this->query->orderBy($field, $direction);
+
+            return;
+        }
+
+        throw new \RuntimeException("Trying to sort by non existing field {$field}");
     }
 }

@@ -2,7 +2,7 @@
 
 namespace LaravelRequestToEloquent\Queries;
 
-use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use LaravelRequestToEloquent\Dummy\Post;
 use LaravelRequestToEloquent\QueryBuilderAbstract;
@@ -18,6 +18,11 @@ class PostListQuery extends QueryBuilderAbstract
     }
 
     // includes
+
+    protected $availableIncludes = [
+        'comments',
+        'comments.user',
+    ];
 
     protected function includesMap(): array
     {
@@ -38,15 +43,37 @@ class PostListQuery extends QueryBuilderAbstract
 
     // filters
 
+    protected $availableFilters = [
+        'draft',
+    ];
+
     protected function filtersMap(): array
     {
         return [
-            'not_published' => 'draft',
+            'non_published' => 'draft',
         ];
     }
 
-    public function filterPublishedBefore($query, $params)
+    public function filterByPublishedBefore($query, $params)
     {
         $query->publishedBefore($params);
+    }
+
+    // sorts
+
+    protected $availableSorts = [
+        'published_at',
+    ];
+
+    protected function sortsMap(): array
+    {
+        return [
+            'published_day' => 'published_at',
+        ];
+    }
+
+    public function sortByCommentsCount(Builder $query, $direction)
+    {
+        $query->withCount('comments')->orderBy('comments_count', $direction);
     }
 }
