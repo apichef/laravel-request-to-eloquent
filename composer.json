@@ -1,12 +1,12 @@
 {
-    "name": "milroyfraser/laravel-request-to-eloquent",
+    "name": "apichef/laravel-request-to-eloquent",
     "type": "library",
     "description": "Easily translate request query string to Eloquent query.",
     "keywords": [
-        "milroyfraser",
+        "apichef",
         "laravel-request-to-eloquent"
     ],
-    "homepage": "https://github.com/milroyfraser/laravel-request-to-eloquent",
+    "homepage": "https://github.com/apichef/laravel-request-to-eloquent",
     "license": "MIT",
     "authors": [
         {
@@ -17,20 +17,22 @@
         }
     ],
     "require": {
-        "php" : "~7.2"
+        "php": "~7.2",
+        "apichef/laravel-request-query-helper": "^0.0.2"
     },
     "require-dev": {
         "phpunit/phpunit" : ">=8.0",
-        "squizlabs/php_codesniffer": "^3.0"
+        "squizlabs/php_codesniffer": "^3.0",
+        "orchestra/testbench": "^4.0"
     },
     "autoload": {
         "psr-4": {
-            "LaravelRequestToEloquent\\": "src"
+            "ApiChef\\RequestToEloquent\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "LaravelRequestToEloquent\\": "tests"
+            "ApiChef\\RequestToEloquent\\": "tests"
         }
     },
     "scripts": {
