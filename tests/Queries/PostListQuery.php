@@ -2,9 +2,9 @@
 
 namespace ApiChef\RequestToEloquent\Queries;
 
+use ApiChef\RequestToEloquent\Dummy\Post;
 use ApiChef\RequestToEloquent\QueryBuilderAbstract;
 use Illuminate\Database\Eloquent\Builder;
-use ApiChef\RequestToEloquent\Dummy\Post;
 
 class PostListQuery extends QueryBuilderAbstract
 {

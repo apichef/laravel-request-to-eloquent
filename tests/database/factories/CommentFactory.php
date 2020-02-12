@@ -1,9 +1,9 @@
 <?php
 
-use Faker\Generator as Faker;
 use ApiChef\RequestToEloquent\Dummy\Comment;
 use ApiChef\RequestToEloquent\Dummy\Post;
 use ApiChef\RequestToEloquent\Dummy\User;
+use Faker\Generator as Faker;
 
 $factory->define(Comment::class, function (Faker $faker) {
     return [

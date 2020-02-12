@@ -1,8 +1,8 @@
 <?php
 
+use ApiChef\RequestToEloquent\Dummy\User;
 use Faker\Generator as Faker;
 use Illuminate\Support\Str;
-use ApiChef\RequestToEloquent\Dummy\User;
 
 $factory->define(User::class, function (Faker $faker) {
     return [

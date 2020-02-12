@@ -2,11 +2,11 @@
 
 namespace ApiChef\RequestToEloquent;
 
+use ApiChef\RequestToEloquent\Dummy\Post;
 use ApiChef\RequestToEloquent\Queries\PostListQuery;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use ApiChef\RequestToEloquent\Dummy\Post;
 
 class QueryBuilderFiltersTest extends TestCase
 {

@@ -2,11 +2,11 @@
 
 namespace ApiChef\RequestToEloquent;
 
-use ApiChef\RequestToEloquent\Queries\PostListQuery;
-use Illuminate\Http\Request;
 use ApiChef\RequestToEloquent\Dummy\Comment;
 use ApiChef\RequestToEloquent\Dummy\Post;
 use ApiChef\RequestToEloquent\Dummy\Tag;
+use ApiChef\RequestToEloquent\Queries\PostListQuery;
+use Illuminate\Http\Request;
 
 class QueryBuilderIncludesTest extends TestCase
 {
