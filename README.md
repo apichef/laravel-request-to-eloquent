@@ -7,39 +7,100 @@
 [![Quality Score][ico-code-quality]][link-code-quality]
 [![Total Downloads][ico-downloads]][link-downloads]
 
-**Note:** Replace ```Milroy E. Fraser``` ```milroyfraser``` ```https://github.com/milroyfraser``` ```milroy@outlook.com``` ```milroyfraser``` ```laravel-request-to-eloquent``` ```Easily translate request query string to Eloquent query.``` with their correct values in [README.md](README.md), [CHANGELOG.md](CHANGELOG.md), [CONTRIBUTING.md](CONTRIBUTING.md), [LICENSE.md](LICENSE.md) and [composer.json](composer.json) files, then delete this line. You can run `$ php prefill.php` in the command line to make all replacements at once. Delete the file prefill.php as well.
-
-This is where your description should go. Try and limit it to a paragraph or two, and maybe throw in a mention of what
-PSRs you support to avoid any confusion with users and contributors.
-
-## Structure
-
-If any of the following are applicable to your project, then the directory structure should follow industry best practices by being named the following.
-
-```
-bin/        
-build/
-docs/
-config/
-src/
-tests/
-vendor/
-```
-
+# Easily translate request query string to Eloquent query.
 
 ## Install
 
 Via Composer
 
 ``` bash
-$ composer require milroyfraser/laravel-request-to-eloquent
+$ composer require apichef/laravel-request-to-eloquent
 ```
 
-## Usage
+## Basic usage
+Model class:
+```php
+namespace App;
 
-``` php
-$skeleton = new LaravelRequestToEloquent();
-echo $skeleton->echoPhrase('Hello, League!');
+use App\Comment;
+use App\Tag;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+
+class Post extends Model
+{
+    protected $dates = [
+        'published_at',
+    ];
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class);
+    }
+
+    public function scopeDraft(Builder $builder)
+    {
+        return $builder->whereNull('published_at');
+    }
+}
+```
+Request query class:
+```php
+namespace App\Queries;
+
+use App\Post;
+use ApiChef\RequestToEloquent\QueryBuilderAbstract;
+
+class PostListQuery extends QueryBuilderAbstract
+{
+    protected function init()
+    {
+        return Post::query();
+    }
+
+    protected $availableIncludes = [
+        'comments',
+        'tags',
+    ];
+
+    protected $availableFilters = [
+        'draft',
+    ];
+
+    protected $availableSorts = [
+        'published_at',
+    ];
+}
+```
+Controller:
+```php
+namespace App\Http\Controllers;
+
+use App\User;
+use App\Queries\PostListQuery;
+
+class DashboardController extends Controller
+{
+    public function index(PostListQuery $postListQuery)
+    {
+        return $postListQuery
+            ->parseAllowedIncludes([
+                'comments',
+                'tags',
+            ])
+            ->get()
+            ->toArray();
+    }
+}
+```
+Http request:
+```shell script
+GET /posts?include=comments,tags&filter[draft]&sort=-published_at
 ```
 
 ## Change log
@@ -69,17 +130,17 @@ If you discover any security related issues, please email milroy@outlook.com ins
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
 
-[ico-version]: https://img.shields.io/packagist/v/milroyfraser/laravel-request-to-eloquent.svg?style=flat-square
+[ico-version]: https://img.shields.io/packagist/v/apichef/laravel-request-to-eloquent.svg?style=flat-square
 [ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
-[ico-travis]: https://img.shields.io/travis/milroyfraser/laravel-request-to-eloquent/master.svg?style=flat-square
-[ico-scrutinizer]: https://img.shields.io/scrutinizer/coverage/g/milroyfraser/laravel-request-to-eloquent.svg?style=flat-square
-[ico-code-quality]: https://img.shields.io/scrutinizer/g/milroyfraser/laravel-request-to-eloquent.svg?style=flat-square
-[ico-downloads]: https://img.shields.io/packagist/dt/milroyfraser/laravel-request-to-eloquent.svg?style=flat-square
+[ico-travis]: https://img.shields.io/travis/apichef/laravel-request-to-eloquent/master.svg?style=flat-square
+[ico-scrutinizer]: https://img.shields.io/scrutinizer/coverage/g/apichef/laravel-request-to-eloquent.svg?style=flat-square
+[ico-code-quality]: https://img.shields.io/scrutinizer/g/apichef/laravel-request-to-eloquent.svg?style=flat-square
+[ico-downloads]: https://img.shields.io/packagist/dt/apichef/laravel-request-to-eloquent.svg?style=flat-square
 
-[link-packagist]: https://packagist.org/packages/milroyfraser/laravel-request-to-eloquent
-[link-travis]: https://travis-ci.org/milroyfraser/laravel-request-to-eloquent
-[link-scrutinizer]: https://scrutinizer-ci.com/g/milroyfraser/laravel-request-to-eloquent/code-structure
-[link-code-quality]: https://scrutinizer-ci.com/g/milroyfraser/laravel-request-to-eloquent
-[link-downloads]: https://packagist.org/packages/milroyfraser/laravel-request-to-eloquent
+[link-packagist]: https://packagist.org/packages/apichef/laravel-request-to-eloquent
+[link-travis]: https://travis-ci.org/apichef/laravel-request-to-eloquent
+[link-scrutinizer]: https://scrutinizer-ci.com/g/apichef/laravel-request-to-eloquent/code-structure
+[link-code-quality]: https://scrutinizer-ci.com/g/apichef/laravel-request-to-eloquent
+[link-downloads]: https://packagist.org/packages/apichef/laravel-request-to-eloquent
 [link-author]: https://github.com/milroyfraser
 [link-contributors]: ../../contributors
