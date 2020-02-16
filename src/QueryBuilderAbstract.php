@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace ApiChef\RequestToEloquent;
 
 use ApiChef\RequestQueryHelper\Fields;
+use ApiChef\RequestQueryHelper\PaginationParams;
 use ApiChef\RequestQueryHelper\QueryParamBag;
 use ApiChef\RequestQueryHelper\SortField;
 use ApiChef\RequestQueryHelper\Sorts;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -34,6 +36,9 @@ abstract class QueryBuilderAbstract
     /** @var Sorts $sorts */
     protected $sorts;
 
+    /** @var PaginationParams $paginationParams */
+    protected $paginationParams;
+
     /** @var EloquentBuilder|QueryBuilder $request */
     private $query;
 
@@ -54,6 +59,7 @@ abstract class QueryBuilderAbstract
         $this->includes = $request->includes();
         $this->filters = $request->filters();
         $this->sorts = $request->sorts();
+        $this->paginationParams = $request->paginationParams();
         $this->query = $this->init($request);
     }
 
@@ -111,15 +117,15 @@ abstract class QueryBuilderAbstract
      */
     public function query()
     {
-        if (! empty($this->allowedIncludes) && $this->request->filled(config('request-query-helper.include'))) {
+        if (! empty($this->allowedIncludes) && $this->includes->filled()) {
             $this->loadIncludes($this->includes);
         }
 
-        if ($this->request->filled(config('request-query-helper.filter'))) {
+        if ($this->filters->filled()) {
             $this->applyFilters($this->filters);
         }
 
-        if ($this->request->filled(config('request-query-helper.sort'))) {
+        if ($this->sorts->filled()) {
             $this->applySorts($this->sorts);
         }
 
@@ -129,11 +135,21 @@ abstract class QueryBuilderAbstract
     /**
      * Execute the query.
      *
-     * @return Collection
+     * @param array $columns
+     * @return Collection|LengthAwarePaginator
      */
-    public function get()
+    public function get($columns = ['*'])
     {
-        return $this->query()->get();
+        if ($this->paginationParams->filled()) {
+            return $this->query()->paginate(
+                $this->paginationParams->perPage(),
+                $columns,
+                $this->paginationParams->pageName(),
+                $this->paginationParams->page()
+            );
+        }
+
+        return $this->query()->get($columns);
     }
 
     /**

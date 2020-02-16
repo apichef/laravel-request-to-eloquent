@@ -35,6 +35,11 @@ class TestCase extends \Orchestra\Testbench\TestCase
             'filter' => 'filter',
             'sort' => 'sort',
             'fields' => 'fields',
+            'pagination' => [
+                'name' => 'page',
+                'number' => 'number',
+                'size' => 'size',
+            ],
         ]);
     }
 }
