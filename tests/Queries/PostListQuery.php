@@ -5,13 +5,14 @@ namespace ApiChef\RequestToEloquent\Queries;
 use ApiChef\RequestToEloquent\Dummy\Post;
 use ApiChef\RequestToEloquent\QueryBuilderAbstract;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 
 class PostListQuery extends QueryBuilderAbstract
 {
     /**
      * {@inheritdoc}
      */
-    protected function init()
+    protected function init(Request $request)
     {
         return Post::query();
     }

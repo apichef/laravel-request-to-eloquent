@@ -55,10 +55,11 @@ namespace App\Queries;
 
 use App\Post;
 use ApiChef\RequestToEloquent\QueryBuilderAbstract;
+use Illuminate\Http\Request;
 
 class PostListQuery extends QueryBuilderAbstract
 {
-    protected function init()
+    protected function init(Request $request)
     {
         return Post::query();
     }

@@ -15,6 +15,7 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 abstract class QueryBuilderAbstract
 {
@@ -53,15 +54,16 @@ abstract class QueryBuilderAbstract
         $this->includes = $request->includes();
         $this->filters = $request->filters();
         $this->sorts = $request->sorts();
-        $this->query = $this->init();
+        $this->query = $this->init($request);
     }
 
     /**
      * Initialise the query.
      *
+     * @param Request $request
      * @return EloquentBuilder|QueryBuilder
      */
-    abstract protected function init();
+    abstract protected function init(Request $request);
 
     protected function includesMap(): array
     {
@@ -137,14 +139,12 @@ abstract class QueryBuilderAbstract
     /**
      * Execute the query and get the first result.
      *
+     * @param array $columns
      * @return Model|object|null
      */
-    public function first()
+    public function first($columns = ['*'])
     {
-        return $this->query()
-            ->take(1)
-            ->get()
-            ->first();
+        return $this->query()->first($columns);
     }
 
     private function loadIncludes(QueryParamBag $includes)
@@ -186,7 +186,7 @@ abstract class QueryBuilderAbstract
             return;
         }
 
-        throw new \RuntimeException("Trying to include non existing relationship {$relation}");
+        throw new RuntimeException("Trying to include non existing relationship {$relation}");
     }
 
     private function applyFilters(QueryParamBag $filters)
@@ -218,7 +218,7 @@ abstract class QueryBuilderAbstract
             return;
         }
 
-        throw new \RuntimeException("Trying to filter by non existing filter {$scope}");
+        throw new RuntimeException("Trying to filter by non existing filter {$scope}");
     }
 
     private function applySorts(Sorts $sorts)
@@ -250,6 +250,6 @@ abstract class QueryBuilderAbstract
             return;
         }
 
-        throw new \RuntimeException("Trying to sort by non existing field {$field}");
+        throw new RuntimeException("Trying to sort by non existing field {$field}");
     }
 }
