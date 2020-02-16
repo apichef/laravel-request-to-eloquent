@@ -33,7 +33,6 @@ class QueryBuilderPaginationTest extends TestCase
         $result = (new PostListQuery($request))
             ->get();
 
-
         $this->assertEquals(2, $result->currentPage());
         $this->assertEquals(5, $result->lastPage());
         $this->assertEquals(4, $result->perPage());
