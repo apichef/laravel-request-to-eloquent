@@ -21,25 +21,25 @@ use RuntimeException;
 
 abstract class QueryBuilderAbstract
 {
-    /** @var Request $request */
+    /** @var Request */
     private $request;
 
-    /** @var Fields $fields */
+    /** @var Fields */
     protected $fields;
 
-    /** @var QueryParamBag $includes */
+    /** @var QueryParamBag */
     protected $includes;
 
-    /** @var QueryParamBag $filters */
+    /** @var QueryParamBag */
     protected $filters;
 
-    /** @var Sorts $sorts */
+    /** @var Sorts */
     protected $sorts;
 
-    /** @var PaginationParams $paginationParams */
+    /** @var PaginationParams */
     protected $paginationParams;
 
-    /** @var EloquentBuilder|QueryBuilder $request */
+    /** @var EloquentBuilder|QueryBuilder */
     private $query;
 
     private $allowedIncludes = [];
