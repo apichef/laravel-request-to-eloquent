@@ -17,6 +17,12 @@ Via Composer
 $ composer require apichef/laravel-request-to-eloquent
 ```
 
+We use `apichef/laravel-request-query-helper` package as a dependency. You can publish it's the config file with:
+
+```bash
+$ php artisan vendor:publish --provider="ApiChef\RequestQueryHelper\RequestQueryHelperServiceProvider"
+```
+
 ## Basic usage
 Model class:
 ```php
