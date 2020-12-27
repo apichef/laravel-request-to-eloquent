@@ -4,6 +4,7 @@ namespace ApiChef\RequestToEloquent;
 
 use ApiChef\RequestToEloquent\Dummy\Post;
 use ApiChef\RequestToEloquent\Queries\PostListQuery;
+use ApiChef\RequestToEloquent\Queries\PostListWithPageSizeQuery;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -36,5 +37,18 @@ class QueryBuilderPaginationTest extends TestCase
         $this->assertEquals(2, $result->currentPage());
         $this->assertEquals(5, $result->lastPage());
         $this->assertEquals(4, $result->perPage());
+    }
+
+    public function test_it_uses_default_psge_size()
+    {
+        factory(Post::class, 20)->create();
+
+        $request = Request::create('/posts');
+
+        /** @var LengthAwarePaginator $post */
+        $result = (new PostListWithPageSizeQuery($request))
+            ->get();
+
+        $this->assertCount(10, $result->items());
     }
 }

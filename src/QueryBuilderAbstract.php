@@ -39,6 +39,8 @@ abstract class QueryBuilderAbstract
     /** @var PaginationParams */
     protected $paginationParams;
 
+    protected $defaultPageSize = null;
+
     /** @var EloquentBuilder|QueryBuilder */
     private $query;
 
@@ -146,6 +148,15 @@ abstract class QueryBuilderAbstract
                 $columns,
                 $this->paginationParams->pageName(),
                 $this->paginationParams->page()
+            );
+        }
+
+        if ($this->defaultPageSize !== null) {
+            return $this->query()->paginate(
+                $this->defaultPageSize,
+                $columns,
+                $this->paginationParams->pageName(),
+                1
             );
         }
 
