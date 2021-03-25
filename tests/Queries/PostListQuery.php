@@ -72,8 +72,13 @@ class PostListQuery extends QueryBuilderAbstract
         ];
     }
 
-    public function sortByCommentsCount(Builder $query, $direction)
+    public function sortByCommentsCount(Builder $query, $direction, string $dateRange = null)
     {
-        $query->withCount('comments')->orderBy('comments_count', $direction);
+        $query->withCount(['comments' => function (Builder $query) use ($dateRange) {
+            return $query->when($dateRange !== null, function ($q) use ($dateRange) {
+                return $q->whereBetween('created_at', explode('|', $dateRange));
+            });
+        }])
+        ->orderBy('comments_count', $direction);
     }
 }

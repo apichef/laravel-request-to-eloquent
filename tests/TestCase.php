@@ -31,10 +31,19 @@ class TestCase extends \Orchestra\Testbench\TestCase
             'prefix'   => '',
         ]);
         $app['config']->set('request-query-helper', [
-            'include' => 'include',
-            'filter' => 'filter',
-            'sort' => 'sort',
-            'fields' => 'fields',
+            'include' => [
+                'name' => 'include',
+            ],
+            'filter' => [
+                'name' => 'filter',
+            ],
+            'sort' => [
+                'name' => 'sort',
+                'param_separator' => ':',
+            ],
+            'fields' => [
+                'name' => 'fields',
+            ],
             'pagination' => [
                 'name' => 'page',
                 'number' => 'number',

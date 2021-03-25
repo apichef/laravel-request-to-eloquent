@@ -103,4 +103,36 @@ class QueryBuilderSortsTest extends TestCase
         $this->assertEquals($result->first()->id, $post3->id);
         $this->assertEquals($result->last()->id, $post2->id);
     }
+
+    public function test_can_sort_by_custom_method_with_aditional_params()
+    {
+        Carbon::setTestNow('2020-02-02');
+
+        $post1 = factory(Post::class)->create(['published_at' => now()->addHours(2)]);
+        $post2 = factory(Post::class)->create(['published_at' => now()]);
+        $post3 = factory(Post::class)->create(['published_at' => now()->addHours(4)]);
+
+        factory(Comment::class, 4)->create(['post_id' => $post1->id, 'created_at' => Carbon::parse('2020-02-03')]);
+        factory(Comment::class, 2)->create(['post_id' => $post3->id, 'created_at' => Carbon::parse('2020-02-03')]);
+        $outOfDateRange = Carbon::parse('2020-02-10');
+        factory(Comment::class, 6)->create(['post_id' => $post2->id, 'created_at' => $outOfDateRange]);
+
+        $request = Request::create('/posts?sort=comments_count:2020-02-02|2020-02-04');
+
+        /** @var Collection $post */
+        $result = (new PostListQuery($request))
+            ->get();
+
+        $this->assertEquals($result->first()->id, $post2->id);
+        $this->assertEquals($result->last()->id, $post1->id);
+
+        $request = Request::create('/posts?sort=-comments_count:2020-02-02|2020-02-04');
+
+        /** @var Collection $post */
+        $result = (new PostListQuery($request))
+            ->get();
+
+        $this->assertEquals($result->first()->id, $post1->id);
+        $this->assertEquals($result->last()->id, $post2->id);
+    }
 }

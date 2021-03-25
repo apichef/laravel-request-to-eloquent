@@ -251,11 +251,11 @@ abstract class QueryBuilderAbstract
     private function applySorts(Sorts $sorts)
     {
         $sorts->each(function (SortField $sortField) {
-            $this->applySort($sortField->getField(), $sortField->getDirection());
+            $this->applySort($sortField->getField(), $sortField->getDirection(), $sortField->getParams());
         });
     }
 
-    private function applySort(string $field, string $direction)
+    private function applySort(string $field, string $direction, string $param = null)
     {
         if ($sortAlias = Arr::get($this->sortsMap(), $field)) {
             $this->query->orderBy($sortAlias, $direction);
@@ -266,7 +266,7 @@ abstract class QueryBuilderAbstract
         $methodName = 'sortBy'.Str::studly($field);
 
         if (method_exists($this, $methodName)) {
-            $this->{$methodName}($this->query, $direction);
+            $this->{$methodName}($this->query, $direction, $param);
 
             return;
         }
