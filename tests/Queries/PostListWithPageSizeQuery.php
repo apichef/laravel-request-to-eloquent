@@ -4,5 +4,5 @@ namespace ApiChef\RequestToEloquent\Queries;
 
 class PostListWithPageSizeQuery extends PostListQuery
 {
-    protected $defaultPageSize = 10;
+    protected ?int $defaultPageSize = 10;
 }

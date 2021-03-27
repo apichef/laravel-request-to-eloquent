@@ -19,7 +19,7 @@ class PostListQuery extends QueryBuilderAbstract
 
     // includes
 
-    protected $availableIncludes = [
+    protected array $availableIncludes = [
         'comments.user',
         'author.posts.tags',
     ];
@@ -43,7 +43,7 @@ class PostListQuery extends QueryBuilderAbstract
 
     // filters
 
-    protected $availableFilters = [
+    protected array $availableFilters = [
         'draft',
     ];
 
@@ -61,7 +61,7 @@ class PostListQuery extends QueryBuilderAbstract
 
     // sorts
 
-    protected $availableSorts = [
+    protected array $availableSorts = [
         'published_at',
     ];
 

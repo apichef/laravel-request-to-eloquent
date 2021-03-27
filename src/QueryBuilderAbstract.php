@@ -11,8 +11,6 @@ use ApiChef\RequestQueryHelper\SortField;
 use ApiChef\RequestQueryHelper\Sorts;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -21,38 +19,21 @@ use RuntimeException;
 
 abstract class QueryBuilderAbstract
 {
-    /** @var Request */
-    private $request;
-
-    /** @var Fields */
-    protected $fields;
-
-    /** @var QueryParamBag */
-    protected $includes;
-
-    /** @var QueryParamBag */
-    protected $filters;
-
-    /** @var Sorts */
-    protected $sorts;
-
-    /** @var PaginationParams */
-    protected $paginationParams;
-
-    protected $defaultPageSize = null;
+    private Request $request;
+    protected Fields $fields;
+    protected QueryParamBag $includes;
+    protected QueryParamBag $filters;
+    protected Sorts $sorts;
+    protected PaginationParams $paginationParams;
+    protected ?int $defaultPageSize = null;
+    private array $allowedIncludes = [];
+    private ?array $allPossibleAvailableIncludes = null;
+    protected array $availableIncludes = [];
+    protected array $availableFilters = [];
+    protected array $availableSorts = [];
 
     /** @var EloquentBuilder|QueryBuilder */
     private $query;
-
-    private $allowedIncludes = [];
-
-    private $allPossibleAvailableIncludes = null;
-
-    protected $availableIncludes = [];
-
-    protected $availableFilters = [];
-
-    protected $availableSorts = [];
 
     public function __construct(Request $request)
     {
@@ -95,7 +76,7 @@ abstract class QueryBuilderAbstract
         return $this;
     }
 
-    private function getPossibleRelationshipCombinations(array $relations)
+    private function getPossibleRelationshipCombinations(array $relations): array
     {
         $combinations = [];
 
@@ -112,11 +93,6 @@ abstract class QueryBuilderAbstract
         return $combinations;
     }
 
-    /**
-     * Build and get query.
-     *
-     * @return EloquentBuilder|QueryBuilder
-     */
     public function query()
     {
         if (! empty($this->allowedIncludes) && $this->includes->filled()) {
@@ -134,47 +110,43 @@ abstract class QueryBuilderAbstract
         return $this->query;
     }
 
-    /**
-     * Execute the query.
-     *
-     * @param array $columns
-     * @return Collection|LengthAwarePaginator
-     */
-    public function get($columns = ['*'])
+    public function get(array $columns = ['*'])
     {
-        if ($this->paginationParams->filled()) {
-            return $this->query()->paginate(
-                $this->paginationParams->perPage(),
-                $columns,
-                $this->paginationParams->pageName(),
-                $this->paginationParams->page()
-            );
-        }
-
-        if ($this->defaultPageSize !== null) {
-            return $this->query()->paginate(
-                $this->defaultPageSize,
-                $columns,
-                $this->paginationParams->pageName(),
-                1
-            );
+        if ($this->shouldPaginate()) {
+            return $this->paginate($columns);
         }
 
         return $this->query()->get($columns);
     }
 
-    /**
-     * Execute the query and get the first result.
-     *
-     * @param array $columns
-     * @return Model|object|null
-     */
-    public function first($columns = ['*'])
+    public function paginateWithTotal(array $columns = ['*']): LengthAwarePaginator
+    {
+        return $this->paginate($columns, true);
+    }
+
+    private function paginate(array $columns, bool $withTotalCount = false)
+    {
+        $paginate = $withTotalCount ? 'paginate' : 'simplePaginate';
+
+        return $this->query()->{$paginate}(
+            $this->paginationParams->perPage($this->defaultPageSize),
+            $columns,
+            $this->paginationParams->pageName(),
+            $this->paginationParams->page(1)
+        );
+    }
+
+    private function shouldPaginate(): bool
+    {
+        return $this->defaultPageSize !== null || $this->paginationParams->filled();
+    }
+
+    public function first(array $columns = ['*'])
     {
         return $this->query()->first($columns);
     }
 
-    private function loadIncludes(QueryParamBag $includes)
+    private function loadIncludes(QueryParamBag $includes): void
     {
         $includes->each(function ($params, $relation) {
             if ($this->isAllowedToInclude($relation)) {
@@ -216,14 +188,14 @@ abstract class QueryBuilderAbstract
         throw new RuntimeException("Trying to include non existing relationship {$relation}");
     }
 
-    private function applyFilters(QueryParamBag $filters)
+    private function applyFilters(QueryParamBag $filters): void
     {
         $filters->each(function ($params, $scope) {
             $this->applyFilter($scope, $params);
         });
     }
 
-    private function applyFilter($scope, $params)
+    private function applyFilter($scope, $params): void
     {
         if ($filterAlias = Arr::get($this->filtersMap(), $scope)) {
             $this->query->{$filterAlias}($params);
@@ -248,14 +220,14 @@ abstract class QueryBuilderAbstract
         throw new RuntimeException("Trying to filter by non existing filter {$scope}");
     }
 
-    private function applySorts(Sorts $sorts)
+    private function applySorts(Sorts $sorts): void
     {
         $sorts->each(function (SortField $sortField) {
             $this->applySort($sortField->getField(), $sortField->getDirection(), $sortField->getParams());
         });
     }
 
-    private function applySort(string $field, string $direction, string $param = null)
+    private function applySort(string $field, string $direction, string $param = null): void
     {
         if ($sortAlias = Arr::get($this->sortsMap(), $field)) {
             $this->query->orderBy($sortAlias, $direction);
