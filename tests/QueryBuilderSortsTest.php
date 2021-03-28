@@ -20,18 +20,20 @@ class QueryBuilderSortsTest extends TestCase
         $post3 = factory(Post::class)->create(['published_at' => now()->addHours(4)]);
 
         $request = Request::create('/posts?sort=published_at');
+        $this->instance(Request::class, $request);
 
         /** @var Collection $post */
-        $result = (new PostListQuery($request))
+        $result = (new PostListQuery())
             ->get();
 
         $this->assertEquals($result->first()->id, $post2->id);
         $this->assertEquals($result->last()->id, $post3->id);
 
         $request = Request::create('/posts?sort=-published_at');
+        $this->instance(Request::class, $request);
 
         /** @var Collection $post */
-        $result = (new PostListQuery($request))
+        $result = (new PostListQuery())
             ->get();
 
         $this->assertEquals($result->first()->id, $post3->id);
@@ -41,9 +43,10 @@ class QueryBuilderSortsTest extends TestCase
     public function test_can_not_sort_by_non_existing_field()
     {
         $request = Request::create('/posts?sort=colour');
+        $this->instance(Request::class, $request);
         $this->expectException(\RuntimeException::class);
 
-        (new PostListQuery($request))
+        (new PostListQuery())
             ->get();
     }
 
@@ -56,18 +59,20 @@ class QueryBuilderSortsTest extends TestCase
         $post3 = factory(Post::class)->create(['published_at' => now()->addHours(4)]);
 
         $request = Request::create('/posts?sort=published_day');
+        $this->instance(Request::class, $request);
 
         /** @var Collection $post */
-        $result = (new PostListQuery($request))
+        $result = (new PostListQuery())
             ->get();
 
         $this->assertEquals($result->first()->id, $post2->id);
         $this->assertEquals($result->last()->id, $post3->id);
 
         $request = Request::create('/posts?sort=-published_day');
+        $this->instance(Request::class, $request);
 
         /** @var Collection $post */
-        $result = (new PostListQuery($request))
+        $result = (new PostListQuery())
             ->get();
 
         $this->assertEquals($result->first()->id, $post3->id);
@@ -86,18 +91,20 @@ class QueryBuilderSortsTest extends TestCase
         factory(Comment::class, 4)->create(['post_id' => $post3->id]);
 
         $request = Request::create('/posts?sort=comments_count');
+        $this->instance(Request::class, $request);
 
         /** @var Collection $post */
-        $result = (new PostListQuery($request))
+        $result = (new PostListQuery())
             ->get();
 
         $this->assertEquals($result->first()->id, $post2->id);
         $this->assertEquals($result->last()->id, $post3->id);
 
         $request = Request::create('/posts?sort=-comments_count');
+        $this->instance(Request::class, $request);
 
         /** @var Collection $post */
-        $result = (new PostListQuery($request))
+        $result = (new PostListQuery())
             ->get();
 
         $this->assertEquals($result->first()->id, $post3->id);
@@ -117,19 +124,22 @@ class QueryBuilderSortsTest extends TestCase
         $outOfDateRange = Carbon::parse('2020-02-10');
         factory(Comment::class, 6)->create(['post_id' => $post2->id, 'created_at' => $outOfDateRange]);
 
-        $request = Request::create('/posts?sort=comments_count:2020-02-02|2020-02-04');
+
+        $request = Request::create('/posts?sort=comments_count:between(2020-02-02|2020-02-04)');
+        $this->instance(Request::class, $request);
 
         /** @var Collection $post */
-        $result = (new PostListQuery($request))
+        $result = (new PostListQuery())
             ->get();
 
         $this->assertEquals($result->first()->id, $post2->id);
         $this->assertEquals($result->last()->id, $post1->id);
 
-        $request = Request::create('/posts?sort=-comments_count:2020-02-02|2020-02-04');
+        $request = Request::create('/posts?sort=-comments_count:between(2020-02-02|2020-02-04)');
+        $this->instance(Request::class, $request);
 
         /** @var Collection $post */
-        $result = (new PostListQuery($request))
+        $result = (new PostListQuery())
             ->get();
 
         $this->assertEquals($result->first()->id, $post1->id);

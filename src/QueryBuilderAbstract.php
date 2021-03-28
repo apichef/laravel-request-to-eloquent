@@ -4,55 +4,33 @@ declare(strict_types=1);
 
 namespace ApiChef\RequestToEloquent;
 
-use ApiChef\RequestQueryHelper\Fields;
-use ApiChef\RequestQueryHelper\PaginationParams;
 use ApiChef\RequestQueryHelper\QueryParamBag;
 use ApiChef\RequestQueryHelper\SortField;
 use ApiChef\RequestQueryHelper\Sorts;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
-use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use RuntimeException;
 
 abstract class QueryBuilderAbstract
 {
-    private Request $request;
-    protected Fields $fields;
-    protected QueryParamBag $includes;
-    protected QueryParamBag $filters;
-    protected Sorts $sorts;
-    protected PaginationParams $paginationParams;
+    use InteractWithQueryString;
+
     protected ?int $defaultPageSize = null;
-    private array $allowedIncludes = [];
-    private ?array $allPossibleAvailableIncludes = null;
     protected array $availableIncludes = [];
     protected array $availableFilters = [];
     protected array $availableSorts = [];
-
-    /** @var EloquentBuilder|QueryBuilder */
-    private $query;
-
-    public function __construct(Request $request)
-    {
-        $this->request = $request;
-        $this->fields = $request->fields();
-        $this->includes = $request->includes();
-        $this->filters = $request->filters();
-        $this->sorts = $request->sorts();
-        $this->paginationParams = $request->paginationParams();
-        $this->query = $this->init($request);
-    }
+    private array $allowedIncludes = [];
+    private ?array $allPossibleAvailableIncludes = null;
 
     /**
      * Initialise the query.
      *
-     * @param Request $request
      * @return EloquentBuilder|QueryBuilder
      */
-    abstract protected function init(Request $request);
+    abstract protected function init();
 
     protected function includesMap(): array
     {
@@ -93,21 +71,26 @@ abstract class QueryBuilderAbstract
         return $combinations;
     }
 
-    public function query()
+    /**
+     * @return EloquentBuilder|QueryBuilder
+     */
+    private function query()
     {
-        if (! empty($this->allowedIncludes) && $this->includes->filled()) {
-            $this->loadIncludes($this->includes);
+        $query = $this->init();
+
+        if (! empty($this->allowedIncludes) && $this->includes()->filled()) {
+            $this->loadIncludes($query, $this->includes());
         }
 
-        if ($this->filters->filled()) {
-            $this->applyFilters($this->filters);
+        if ($this->filters()->filled()) {
+            $this->applyFilters($query, $this->filters());
         }
 
-        if ($this->sorts->filled()) {
-            $this->applySorts($this->sorts);
+        if ($this->sorts()->getFields()->isNotEmpty()) {
+            $this->applySorts($query, $this->sorts());
         }
 
-        return $this->query;
+        return $query;
     }
 
     public function get(array $columns = ['*'])
@@ -129,16 +112,16 @@ abstract class QueryBuilderAbstract
         $paginate = $withTotalCount ? 'paginate' : 'simplePaginate';
 
         return $this->query()->{$paginate}(
-            $this->paginationParams->perPage($this->defaultPageSize),
+            $this->paginationParams()->perPage($this->defaultPageSize),
             $columns,
-            $this->paginationParams->pageName(),
-            $this->paginationParams->page(1)
-        );
+            $this->paginationParams()->pageName(),
+            $this->paginationParams()->page(1)
+        )->withQueryString();
     }
 
     private function shouldPaginate(): bool
     {
-        return $this->defaultPageSize !== null || $this->paginationParams->filled();
+        return $this->defaultPageSize !== null || $this->paginationParams()->filled();
     }
 
     public function first(array $columns = ['*'])
@@ -146,11 +129,11 @@ abstract class QueryBuilderAbstract
         return $this->query()->first($columns);
     }
 
-    private function loadIncludes(QueryParamBag $includes): void
+    private function loadIncludes($query, QueryParamBag $includes): void
     {
-        $includes->each(function ($params, $relation) {
+        $includes->each(function ($params, $relation) use ($query) {
             if ($this->isAllowedToInclude($relation)) {
-                $this->loadRelation($relation, $params);
+                $this->loadRelation($query, $relation, $params);
             }
         });
     }
@@ -160,17 +143,17 @@ abstract class QueryBuilderAbstract
         return in_array($relation, $this->allowedIncludes);
     }
 
-    private function loadRelation($relation, $params): void
+    private function loadRelation($query, $relation, $params): void
     {
         if ($relationAlias = Arr::get($this->includesMap(), $relation)) {
-            $this->query->with($relationAlias);
+            $query->with($relationAlias);
 
             return;
         }
 
         $methodName = 'include'.Str::studly(str_replace('.', 'With', $relation));
         if (method_exists($this, $methodName)) {
-            $this->{$methodName}($this->query, $params);
+            $this->{$methodName}($query, $params);
 
             return;
         }
@@ -180,7 +163,7 @@ abstract class QueryBuilderAbstract
         }
 
         if (in_array($relation, $this->allPossibleAvailableIncludes)) {
-            $this->query->with($relation);
+            $query->with($relation);
 
             return;
         }
@@ -188,17 +171,17 @@ abstract class QueryBuilderAbstract
         throw new RuntimeException("Trying to include non existing relationship {$relation}");
     }
 
-    private function applyFilters(QueryParamBag $filters): void
+    private function applyFilters($query, QueryParamBag $filters): void
     {
-        $filters->each(function ($params, $scope) {
-            $this->applyFilter($scope, $params);
+        $filters->each(function ($params, $scope) use ($query) {
+            $this->applyFilter($query, $scope, $params);
         });
     }
 
-    private function applyFilter($scope, $params): void
+    private function applyFilter($query, $scope, $params): void
     {
         if ($filterAlias = Arr::get($this->filtersMap(), $scope)) {
-            $this->query->{$filterAlias}($params);
+            $query->{$filterAlias}($params);
 
             return;
         }
@@ -206,13 +189,13 @@ abstract class QueryBuilderAbstract
         $methodName = 'filterBy'.Str::studly($scope);
 
         if (method_exists($this, $methodName)) {
-            $this->{$methodName}($this->query, $params);
+            $this->{$methodName}($query, $params);
 
             return;
         }
 
         if (in_array($scope, $this->availableFilters)) {
-            $this->query->{$scope}($params);
+            $query->{$scope}($params);
 
             return;
         }
@@ -220,17 +203,17 @@ abstract class QueryBuilderAbstract
         throw new RuntimeException("Trying to filter by non existing filter {$scope}");
     }
 
-    private function applySorts(Sorts $sorts): void
+    private function applySorts($query, Sorts $sorts): void
     {
-        $sorts->each(function (SortField $sortField) {
-            $this->applySort($sortField->getField(), $sortField->getDirection(), $sortField->getParams());
+        $sorts->getFields()->each(function (SortField $sortField) use ($query) {
+            $this->applySort($query, $sortField->getField(), $sortField->getDirection(), $sortField->getParams());
         });
     }
 
-    private function applySort(string $field, string $direction, string $param = null): void
+    private function applySort($query, string $field, string $direction, array $param): void
     {
         if ($sortAlias = Arr::get($this->sortsMap(), $field)) {
-            $this->query->orderBy($sortAlias, $direction);
+            $query->orderBy($sortAlias, $direction);
 
             return;
         }
@@ -238,13 +221,13 @@ abstract class QueryBuilderAbstract
         $methodName = 'sortBy'.Str::studly($field);
 
         if (method_exists($this, $methodName)) {
-            $this->{$methodName}($this->query, $direction, $param);
+            $this->{$methodName}($query, $direction, $param);
 
             return;
         }
 
         if (in_array($field, $this->availableSorts)) {
-            $this->query->orderBy($field, $direction);
+            $query->orderBy($field, $direction);
 
             return;
         }

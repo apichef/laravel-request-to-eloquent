@@ -18,7 +18,7 @@
     ],
     "require": {
         "php": "~7.4 || ^8.0",
-        "apichef/laravel-request-query-helper": "^1.0"
+        "apichef/laravel-request-query-helper": "^2.1"
     },
     "require-dev": {
         "laravel/legacy-factories": "^1.1",

@@ -5,14 +5,14 @@ namespace ApiChef\RequestToEloquent\Queries;
 use ApiChef\RequestToEloquent\Dummy\Post;
 use ApiChef\RequestToEloquent\QueryBuilderAbstract;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class PostListQuery extends QueryBuilderAbstract
 {
     /**
      * {@inheritdoc}
      */
-    protected function init(Request $request)
+    protected function init()
     {
         return Post::query();
     }
@@ -72,11 +72,11 @@ class PostListQuery extends QueryBuilderAbstract
         ];
     }
 
-    public function sortByCommentsCount(Builder $query, $direction, string $dateRange = null)
+    public function sortByCommentsCount(Builder $query, $direction, array $params)
     {
-        $query->withCount(['comments' => function (Builder $query) use ($dateRange) {
-            return $query->when($dateRange !== null, function ($q) use ($dateRange) {
-                return $q->whereBetween('created_at', explode('|', $dateRange));
+        $query->withCount(['comments' => function (Builder $query) use ($params) {
+            return $query->when(Arr::has($params, 'between'), function ($q) use ($params) {
+                return $q->whereBetween('created_at', Arr::get($params, 'between'));
             });
         }])
         ->orderBy('comments_count', $direction);

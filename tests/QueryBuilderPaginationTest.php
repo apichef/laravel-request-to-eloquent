@@ -15,9 +15,10 @@ class QueryBuilderPaginationTest extends TestCase
     {
         factory(Post::class, 20)->create();
         $request = Request::create('/posts?page[number]=2&page[size]=4');
+        $this->instance(Request::class, $request);
 
         /** @var Paginator $result */
-        $result = (new PostListQuery($request))->get();
+        $result = (new PostListQuery())->get();
 
         $this->assertInstanceOf(Paginator::class, $result);
         $this->assertEquals(2, $result->currentPage());
@@ -28,8 +29,9 @@ class QueryBuilderPaginationTest extends TestCase
     {
         factory(Post::class, 20)->create();
         $request = Request::create('/posts?page[number]=2&page[size]=4');
+        $this->instance(Request::class, $request);
 
-        $result = (new PostListQuery($request))->paginateWithTotal();
+        $result = (new PostListQuery())->paginateWithTotal();
 
         $this->assertInstanceOf(LengthAwarePaginator::class, $result);
         $this->assertEquals(2, $result->currentPage());
@@ -37,13 +39,28 @@ class QueryBuilderPaginationTest extends TestCase
         $this->assertEquals(4, $result->perPage());
     }
 
+    public function test_pagination_links_appends_query_parameters()
+    {
+        factory(Post::class, 20)->create();
+        $request = Request::create('/posts?include=comments&page[number]=2&page[size]=4');
+        $this->instance(Request::class, $request);
+
+        /** @var Paginator $result */
+        $result = (new PostListQuery())->get();
+
+        $this->assertInstanceOf(Paginator::class, $result);
+        $this->assertEquals(2, $result->currentPage());
+        $this->assertEquals(4, $result->perPage());
+    }
+
     public function test_it_uses_default_psge_size()
     {
         factory(Post::class, 20)->create();
         $request = Request::create('/posts');
+        $this->instance(Request::class, $request);
 
         /** @var Paginator $result */
-        $result = (new PostListWithPageSizeQuery($request))->get();
+        $result = (new PostListWithPageSizeQuery())->get();
 
         $this->assertCount(10, $result->items());
     }

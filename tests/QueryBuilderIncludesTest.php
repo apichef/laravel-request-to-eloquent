@@ -15,9 +15,10 @@ class QueryBuilderIncludesTest extends TestCase
         factory(Comment::class)->create();
 
         $request = Request::create('/posts?include=comments');
+        $this->instance(Request::class, $request);
 
         /** @var Post $post */
-        $result = (new PostListQuery($request))
+        $result = (new PostListQuery())
             ->parseAllowedIncludes(['comments'])
             ->first();
 
@@ -27,9 +28,10 @@ class QueryBuilderIncludesTest extends TestCase
     public function test_can_not_include_non_existing_relationship()
     {
         $request = Request::create('/posts?include=colour');
+        $this->instance(Request::class, $request);
         $this->expectException(\RuntimeException::class);
 
-        (new PostListQuery($request))
+        (new PostListQuery())
             ->parseAllowedIncludes(['colour'])
             ->get();
     }
@@ -39,9 +41,10 @@ class QueryBuilderIncludesTest extends TestCase
         factory(Comment::class)->create();
 
         $request = Request::create('/posts?include=comments');
+        $this->instance(Request::class, $request);
 
         /** @var Post $post */
-        $result = (new PostListQuery($request))
+        $result = (new PostListQuery())
             ->first();
 
         $this->assertFalse($result->relationLoaded('comments'));
@@ -54,9 +57,10 @@ class QueryBuilderIncludesTest extends TestCase
         $post->tags()->attach(factory(Tag::class)->create()->id);
 
         $request = Request::create('/posts?include=subjects');
+        $this->instance(Request::class, $request);
 
         /** @var Post $result */
-        $result = (new PostListQuery($request))
+        $result = (new PostListQuery())
             ->parseAllowedIncludes(['subjects'])
             ->first();
 
@@ -68,9 +72,10 @@ class QueryBuilderIncludesTest extends TestCase
         factory(Comment::class)->create();
 
         $request = Request::create('/posts?include=comments.user');
+        $this->instance(Request::class, $request);
 
         /** @var Post $post */
-        $result = (new PostListQuery($request))
+        $result = (new PostListQuery())
             ->parseAllowedIncludes(['comments.user'])
             ->first();
 
@@ -83,9 +88,10 @@ class QueryBuilderIncludesTest extends TestCase
         factory(Comment::class)->create();
 
         $request = Request::create('/posts?include=feedback.submitted_by');
+        $this->instance(Request::class, $request);
 
         /** @var Post $post */
-        $result = (new PostListQuery($request))
+        $result = (new PostListQuery())
             ->parseAllowedIncludes(['feedback.submitted_by'])
             ->first();
 
@@ -98,9 +104,10 @@ class QueryBuilderIncludesTest extends TestCase
         factory(Comment::class)->create();
 
         $request = Request::create('/posts?include=feedback');
+        $this->instance(Request::class, $request);
 
         /** @var Post $post */
-        $result = (new PostListQuery($request))
+        $result = (new PostListQuery())
             ->parseAllowedIncludes(['feedback.submitted_by'])
             ->first();
 
@@ -112,9 +119,10 @@ class QueryBuilderIncludesTest extends TestCase
         factory(Comment::class)->create();
 
         $request = Request::create('/posts?include=author');
+        $this->instance(Request::class, $request);
 
         /** @var Post $post */
-        $result = (new PostListQuery($request))
+        $result = (new PostListQuery())
             ->parseAllowedIncludes(['author.posts.tags'])
             ->first();
 
