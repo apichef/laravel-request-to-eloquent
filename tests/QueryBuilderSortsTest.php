@@ -124,7 +124,6 @@ class QueryBuilderSortsTest extends TestCase
         $outOfDateRange = Carbon::parse('2020-02-10');
         factory(Comment::class, 6)->create(['post_id' => $post2->id, 'created_at' => $outOfDateRange]);
 
-
         $request = Request::create('/posts?sort=comments_count:between(2020-02-02|2020-02-04)');
         $this->instance(Request::class, $request);
 
